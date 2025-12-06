@@ -86,89 +86,89 @@
         /* Liquid Glass Sphere */
         .glass-panel {
             position: relative;
-            width: 320px; /* Slightly larger */
+            width: 320px;
             height: 320px;
             
-            /* Multi-layered glass background */
-            background: 
-                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.1) 20%, rgba(255,255,255,0) 50%), /* Specular Highlight */
-                radial-gradient(circle at 70% 70%, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%), /* Bottom reflection */
-                linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.05) 100%); /* Base glass body */
+            /* Back Glass Body (Behind content) - Minimal tint */
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
                 
-            backdrop-filter: blur(8px) brightness(1.1); /* Brighten content behind */
-            -webkit-backdrop-filter: blur(8px) brightness(1.1);
+            backdrop-filter: blur(3px); /* Low blur for high transparency */
+            -webkit-backdrop-filter: blur(3px);
             
             border-radius: 50%;
             
-            /* Complex border/shadow for thickness and refraction */
+            /* Sharp Glass Border */
             border: 1px solid rgba(255, 255, 255, 0.4);
+            
+            /* Realistic Shadow & Volume */
             box-shadow: 
-                0 30px 60px var(--sphere-shadow), /* Drop shadow */
-                inset 0 0 20px rgba(255,255,255,0.6), /* Inner glow */
-                inset 10px 10px 20px rgba(255,255,255,0.5), /* Top-left inner highlight */
-                inset -5px -5px 15px rgba(255,255,255,0.2), /* Bottom-right inner shade */
-                0 0 0 1px rgba(255,255,255,0.2); /* Outer subtle ring */
+                /* Deep Shadow */
+                0 40px 80px -10px rgba(0,0,0,0.2),
+                /* Caustic Light Leak in Shadow (Fake it with multiple shadows) */
+                0 50px 40px -20px rgba(255,255,255,0.3),
+                /* Inner Refraction/Volume */
+                inset 0 0 20px rgba(255,255,255,0.3),
+                inset 10px 10px 30px rgba(255,255,255,0.4),
+                inset -5px -5px 20px rgba(255,255,255,0.2),
+                0 0 0 1px rgba(255,255,255,0.2);
                 
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
+            /* overflow: hidden; Removed to allow external glow/caustics if needed, but children are clipped */
             z-index: 10;
             transition: all 0.3s ease;
-            
-            /* Refined Masking */
-            mask-image: radial-gradient(circle at center, black 65%, transparent 100%);
-            -webkit-mask-image: radial-gradient(circle at center, black 65%, transparent 100%);
         }
         
         /* Active state animation */
         .glass-panel.active {
             box-shadow: 
-                0 40px 80px var(--sphere-shadow),
-                inset 0 0 30px rgba(255,255,255,0.8),
-                inset 10px 10px 30px rgba(255,255,255,0.6),
-                inset -5px -5px 20px rgba(255,255,255,0.3),
+                0 50px 90px -10px rgba(0,0,0,0.25),
+                0 60px 50px -20px rgba(255,255,255,0.4), /* Brighter caustic */
+                inset 0 0 30px rgba(255,255,255,0.5),
+                inset 10px 10px 40px rgba(255,255,255,0.5),
+                inset -5px -5px 25px rgba(255,255,255,0.3),
                 0 0 0 2px rgba(255,255,255,0.3);
             transform: scale(1.02);
         }
         
-        /* Iridescent rim effect */
+        /* Caustic / Projection Effect */
         .glass-panel::before {
             content: '';
             position: absolute;
-            inset: -2px;
-            border-radius: 50%;
-            padding: 2px;
-            background: conic-gradient(from 0deg, transparent, rgba(142, 197, 252, 0.3), transparent, rgba(224, 195, 252, 0.3), transparent);
-            -webkit-mask: 
-               linear-gradient(#fff 0 0) content-box, 
-               linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
+            top: 50%;
+            left: 50%;
+            width: 140%;
+            height: 140%;
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 50%);
+            transform: translate(-20%, -20%) rotate(45deg); /* Project light towards bottom right */
+            z-index: -1;
             pointer-events: none;
-            animation: rotateRim 10s linear infinite;
+            opacity: 0.4;
+            mix-blend-mode: overlay;
+            filter: blur(15px);
         }
         
-        @keyframes rotateRim {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(-360deg); }
-        }
-        
-        /* Sharp Highlight Reflection */
+        /* Front Glass Reflections (The Sun & Gloss) */
         .glass-panel::after {
             content: '';
             position: absolute;
-            top: 10%;
-            left: 12%;
-            width: 35%;
-            height: 18%;
+            inset: 0;
             border-radius: 50%;
-            background: radial-gradient(ellipse at center, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 70%);
-            transform: rotate(-45deg);
+            z-index: 50; /* Ensure on top of content */
             pointer-events: none;
-            filter: blur(2px);
-            opacity: 0.9;
-            mix-blend-mode: overlay;
+            
+            background: 
+                /* Sharp Sun Spot */
+                radial-gradient(ellipse at 28% 28%, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 4%, rgba(255,255,255,0) 15%),
+                /* Specular Glow */
+                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 50%),
+                /* Bottom Internal Reflection */
+                radial-gradient(circle at 70% 70%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 60%),
+                /* Surface Sheen */
+                linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 40%);
+                
+            mix-blend-mode: normal;
         }
 
         /* Siri Blob Animation - Contained inside sphere now? 
@@ -278,11 +278,6 @@
             margin-top: 15px;
             font-size: 14px;
             color: #888;
-        }
-
-        /* Remove the old liquid shine skew effect as it conflicts with sphere look */
-        .glass-panel::before {
-            display: none;
         }
     </style>
 </head>
